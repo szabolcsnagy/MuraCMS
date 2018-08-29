@@ -30,7 +30,7 @@ a separately distributed license.
 /admin/
 /tasks/
 /config/
-/requirements/mura/
+/core/mura/
 You may copy and distribute such a combined work under the terms of GPL for Mura CMS, provided that you include
 the source code of that other code when and as the GNU GPL requires distribution of source code.
 
@@ -56,8 +56,6 @@ to your own modified versions of Mura CMS.
 			<div class="nav-module-specific btn-group">
 			<cfif rc.action eq "updateFiles">
 				<a class="btn" href="./?muraAction=cSettings.editSite&siteid=#esapiEncode('url',rc.siteid)#"><i class="mi-pencil"></i> Edit Site</a>
-			<cfelseif application.configBean.getAllowAutoUpdates() and  listFind(session.mura.memberships,'S2')>
-				<a  class="btn" href="##" onclick="confirmDialog('WARNING: Do not update your site files unless you have backed up your current siteID directory.',function(){actionModal('./?muraAction=cSettings.editSite&siteid=#esapiEncode('url',rc.siteid)#&action=updateFiles#rc.$.renderCSRFTokens(context=rc.siteid & 'updatesite',format='url')#')});return false;"><i class="mi-cloud-download"></i> Update Site</a>
 			</cfif>
 			<cfif application.configBean.getJavaEnabled()>
 				<a  class="btn" href="?muraAction=cSettings.selectBundleOptions&siteID=#esapiEncode('url',rc.siteBean.getSiteID())#"><i class="mi-gift"></i> Create Site Bundle</a>
@@ -65,13 +63,12 @@ to your own modified versions of Mura CMS.
 			<cfif len(rc.siteBean.getExportLocation()) and directoryExists(rc.siteBean.getExportLocation())>
 				<a  class="btn" href="##" onclick="confirmDialog('Export static HTML files to #esapiEncode("javascript","'#rc.siteBean.getExportLocation()#'")#.',function(){actionModal('./?muraAction=csettings.exportHTML&siteID=#rc.siteBean.getSiteID()#')});return false;"><i class="mi-share"></i> Export Static HTML (BETA)</a>
 			</cfif>
-			<a class="btn" href="./?muraAction=cExtend.listSubTypes&siteid=#esapiEncode('url',rc.siteid)#"><i class="mi-list-alt"></i> Class Extensions</a> <a  class="btn" href="./?muraAction=cTrash.list&siteID=#esapiEncode('url',rc.siteid)#"><i class="mi-trash"></i> Trash Bin</a>
+			<a class="btn" href="./?muraAction=cExtend.listSubTypes&siteid=#esapiEncode('url',rc.siteid)#"><i class="mi-list-alt"></i> Class Extensions</a>  <cfif listFind(session.mura.memberships,'S2')> <a  class="btn" href="./?muraAction=cTrash.list&siteID=#esapiEncode('url',rc.siteid)#"><i class="mi-trash"></i> Trash Bin</a></cfif>
 		</div>
 	</cfif>
 	</div><!--- /.mura-header --->
 </cfoutput>
-<cfif rc.action neq "updateFiles">
-	<cfoutput>
+<cfoutput>
 		<form novalidate method ="post"  enctype="multipart/form-data" action="./?muraAction=cSettings.updateSite" name="form1"  onsubmit="return validate(this);">
 		<!---
 <cfhtmlhead text='<link rel="stylesheet" href="css/tab-view.css" type="text/css" media="screen">'>
@@ -95,7 +92,7 @@ to your own modified versions of Mura CMS.
 		</cfoutput>
 		</cfsavecontent>
 		<cfif arrayLen(extendSets)>
-			<cfset tabLabelList='Basic,Contact Info,Shared Resources,Modules,Email,Images,Extranet,Display Regions,Extended Attributes,Deploy Bundle,'>
+			<cfset tabLabelList='Basic,Contact Info,Shared Resources,Admin Modules,Email,Images,Extranet,Display Regions,Extended Attributes,Deploy Bundle,'>
 			<cfset tabList='tabBasic,tabContactinfo,tabSharedresources,tabModules,tabEmail,tabImages,tabExtranet,tabDisplayregions,tabExtendedAttributes,tabBundles'>
 		<cfelse>
 			<cfset tabLabelList='Basic,Contact Info,Shared Resources,Modules,Email,Images,Extranet,Display Regions,Deploy Bundle'>
@@ -313,7 +310,7 @@ to your own modified versions of Mura CMS.
 
 				<!--- Custom Context + Port --->
 						<div class="mura-control-group">
-								<label>Is this a Remote Site?</label>
+								<label>Is this a Remote Site? (WARNING: When set to true all content MUST be rendered via the JSON/REST APIs)</label>
 								<label class="radio inline">
 										<input type="radio" name="IsRemote" value="0"<cfif rc.siteBean.getIsRemote() neq 1> checked</cfif>>
 								No</label>
@@ -649,6 +646,16 @@ to your own modified versions of Mura CMS.
 					Off </label>
 					<label class="radio inline">
 					<input type="radio" name="showDashboard" value="1" <cfif rc.siteBean.getShowDashboard() eq 1> checked</cfif>>
+					On </label>
+				</div>
+
+				<div class="mura-control-group">
+					<label>Mura ORM Scaffolding (ALPHA)</label>
+					<label class="radio inline">
+					<input type="radio" name="scaffolding" value="0" <cfif rc.siteBean.getScaffolding() neq 1> checked</cfif>>
+					Off </label>
+					<label class="radio inline">
+					<input type="radio" name="scaffolding" value="1" <cfif rc.siteBean.getScaffolding() eq 1> checked</cfif>>
 					On </label>
 				</div>
 			</div> <!--- /.block-content --->
@@ -1175,29 +1182,43 @@ to your own modified versions of Mura CMS.
 					</div>
 
 				<div class="mura-control-group">
-				<label>Select Bundle File From Server
-						<cfif application.configBean.getPostBundles()>
-						(Preferred)
-					</cfif>
+					<label>
+						<span
+							data-toggle="popover"
+							title=""
+							data-placement="right"
+							data-content="Enter the complete server path to the Site Bundle here. For example: C://path/to/bundle/file.zip"
+							data-original-title="INFO">
+							Select Bundle File From Server
+							<cfif application.configBean.getPostBundles()>
+								<strong>(Preferred)</strong>
+							</cfif>
+							<i class="mi-question-circle"></i>
+						</span>
 					</label>
 					<div class="mura-control justify">
 						<input class="text" type="text" name="serverBundlePath" id="serverBundlePath" value="">
 						<input type="button" value="Browse Server" class="mura-ckfinder" data-completepath="true" data-resourcetype="root" data-target="serverBundlePath"/>
 					</div>
-						<p class="help-block">You can deploy a bundle that exists on the server by entering the complete server path to the Site Bundle here. This eliminates the need to upload the file via your web browser, avoiding some potential timeout issues.</p>
-			</div>
+					<cfif application.configBean.getPostBundles()>
+						<p class="help-block">
+							Selecting a bundle file from the server eliminates the need to upload the file via your web browser, avoiding potential timeout issues and server upload restrictions.
+						</p>
+					</cfif>
+				</div>
+
 				<cfif application.configBean.getPostBundles()>
-				<div class="mura-control-group">
+					<div class="mura-control-group">
 						<label>
 							<span data-toggle="popover" title="" data-placement="right"
-						  	data-content="#esapiEncode('html_attr','Uploading large files via a web browser can produce inconsistent results.')#"
-						  	data-original-title="#esapiEncode('html_attr','WARNING')#">Upload Bundle File <i class="mi-question-circle"></i></span>
+							data-content="Uploading large files via the web browser can result in potential timeout issues and trigger server upload restrictions."
+							data-original-title="WARNING">Upload Bundle File <i class="mi-question-circle"></i></span>
 						</label>
 						<input type="file" name="bundleFile" accept=".zip"/>
 					</div>
 				<cfelse>
-				<input type="hidden" name="bundleFile" value=""/>
-			</cfif>
+					<input type="hidden" name="bundleFile" value=""/>
+				</cfif>
 
 			</div> <!--- /.block-content --->
 			<cfelse>
@@ -1296,36 +1317,3 @@ to your own modified versions of Mura CMS.
 	</div>	<!--- /.block-constrain --->
 
 </form>
-
-<cfelseif rc.$.validateCSRFTokens(context=rc.siteid & 'updatesite')>
-	<cftry>
-		<cfset updated=application.autoUpdater.update(rc.siteid)>
-		<cfset files=updated.files>
-
-			<div class="block block-constrain">
-				<div class="block block-bordered">
-				  <div class="block-content">
-
-						<div class="help-block-inline">Your site's files have been updated to version <cfoutput>#application.autoUpdater.getCurrentCompleteVersion(rc.siteid)#</cfoutput>.</div>
-						<p> <strong>Updated Files <cfoutput>(#arrayLen(files)#)</cfoutput></strong><br/>
-							<cfif arrayLen(files)>
-								<cfoutput>
-									<cfloop from="1" to="#arrayLen(files)#" index="i">
-										#files[i]#<br />
-									</cfloop>
-								</cfoutput>
-							</cfif>
-						</p>
-
-						<div class="clearfix"></div>
-					</div> <!-- /.block-content -->
-				</div> <!-- /.block-bordered -->
-			</div> <!-- /.block-constrain -->
-
-		<cfcatch>
-			<h2>An Error has occurred.</h2>
-			<cfdump var="#cfcatch.message#">
-			<cfdump var="#cfcatch.TagContext#">
-		</cfcatch>
-	</cftry>
-</cfif>

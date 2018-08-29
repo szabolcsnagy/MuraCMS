@@ -29,13 +29,10 @@
 	• May not alter the default display of the Mura CMS logo within Mura CMS and
 	• Must not alter any files in the following directories.
 
-	 /admin/
-	 /tasks/
-	 /config/
-	 /requirements/mura/
-	 /Application.cfc
-	 /index.cfm
-	 /MuraProxy.cfc
+	/admin/
+	/core/
+	/Application.cfc
+	/index.cfm
 
 	You may copy and distribute Mura CMS with a plug-in, theme or bundle that meets the above guidelines as a combined work
 	under the terms of GPL for Mura CMS, provided that you include the source code of that other code when and as the GNU GPL
@@ -74,7 +71,7 @@
 	      <button id="mura-sidebar-toggle" class="btn btn-default" data-toggle="layout" data-action="sidebar_mini_toggle" type="button">
 	          <i class="mi-navicon"></i>
 	      </button>
-	      	
+
 	      <button id="mura-sidebar-toggle-open" class="btn btn-default" data-toggle="layout" data-action="sidebar_mini_toggle" type="button">
 	          <i class="mi-navicon"></i>
 	      </button>
@@ -90,7 +87,7 @@
     <!--- site selector  --->
     <li id="site-selector">
       <div class="btn-group">
-     		<a id="select-site-btn" class="btn btn-default" href="#rc.$.siteConfig().getWebPath(complete=1)#<cfif application.configBean.getSiteIDInURLS()>/#session.siteid#/</cfif>" target="_blank"><i class="mi-globe"></i> #esapiEncode('html', application.settingsManager.getSite(session.siteid).getSite())#</a>
+     		<a id="select-site-btn" class="btn btn-default" href="#rc.$.createHref(filename='',complete=1)#" target="_blank"><i class="mi-globe"></i> #esapiEncode('html', application.settingsManager.getSite(session.siteid).getSite())#</a>
         <button type="button" class="btn btn-default dropdown-toggle" id="site-selector-trigger" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
           <span class="caret"></span>
         </button>

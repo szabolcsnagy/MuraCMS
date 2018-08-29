@@ -28,13 +28,10 @@ Your custom code
 • May not alter the default display of the Mura CMS logo within Mura CMS and
 • Must not alter any files in the following directories.
 
- /admin/
- /tasks/
- /config/
- /requirements/mura/
- /Application.cfc
- /index.cfm
- /MuraProxy.cfc
+	/admin/
+	/core/
+	/Application.cfc
+	/index.cfm
 
 You may copy and distribute Mura CMS with a plug-in, theme or bundle that meets the above guidelines as a combined work
 under the terms of GPL for Mura CMS, provided that you include the source code of that other code when and as the GNU GPL
@@ -51,7 +48,7 @@ version 2 without this exception.  You may, if you choose, apply this exception 
 <cfparam name="session.copyAll" default="false">
 <cfparam name="session.openSectionList" default="">
 <cfparam name="rc.sorted" default="false" />
-<cfset sectionid=rc.contentID>
+<cfset sectionid=rc.contentid>
 <cfset sectionFound=listFind(session.openSectionList,sectionid)>
 
 <cfif not sectionFound>
@@ -77,11 +74,11 @@ version 2 without this exception.  You may, if you choose, apply this exception 
 <cfset r=application.permUtility.setRestriction(crumbdata).restrict>
 <cfset rsNext=application.contentManager.getNest(sectionid,rc.siteid,rc.sortBy,rc.sortDirection)>
 
+<cfset session.openSectionList=listAppend(session.openSectionList,sectionid)>
+
 <cfsavecontent variable="data.html">
 <cf_dsp_nest topid="#esapiEncode('html_attr',sectionid)#" parentid="#esapiEncode('html_attr',sectionid)#"  rsnest="#rsNext#" locking="#application.settingsManager.getSite(rc.siteid).getlocking()#" nestlevel="1" perm="#perm#" siteid="#rc.siteid#" moduleid="#esapiEncode('html_attr',rc.moduleid)#" restricted="#r#" viewdepth="1" nextn="#session.mura.nextN#" startrow="#esapiEncode('html_attr',rc.startrow)#" sortBy="#esapiEncode('html_attr',rc.sortBy)#" sortDirection="#esapiEncode('html_attr',rc.sortDirection)#" pluginEvent="#pluginEvent#" isSectionRequest="true" muraScope="#rc.$#">
 </cfsavecontent>
-
-<cfset session.openSectionList=listAppend(session.openSectionList,sectionid)>
 
 <cfcontent type="application/json; charset=utf-8" reset="true"><cfoutput>#$.getBean('jsonSerializer').serialize(data)#</cfoutput><cfabort>
 

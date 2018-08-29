@@ -28,13 +28,10 @@ Your custom code
 • May not alter the default display of the Mura CMS logo within Mura CMS and
 • Must not alter any files in the following directories.
 
- /admin/
- /tasks/
- /config/
- /requirements/mura/
- /Application.cfc
- /index.cfm
- /MuraProxy.cfc
+	/admin/
+	/core/
+	/Application.cfc
+	/index.cfm
 
 You may copy and distribute Mura CMS with a plug-in, theme or bundle that meets the above guidelines as a combined work
 under the terms of GPL for Mura CMS, provided that you include the source code of that other code when and as the GNU GPL
@@ -139,11 +136,18 @@ version 2 without this exception.  You may, if you choose, apply this exception 
 							<li><a href="./?muraAction=cArch.update&action=deleteall&contentid=#esapiEncode('url',rc.contentid)#&type=#esapiEncode('url',rc.type)#&parentid=#esapiEncode('url',rc.parentid)#&topid=#esapiEncode('url',rc.topid)#&siteid=#esapiEncode('url',rc.siteid)#&startrow=#esapiEncode('url',rc.startrow)#&moduleid=#esapiEncode('url',rc.moduleid)##rc.$.renderCSRFTokens(context=rc.contentid & 'deleteall',format='url')#"
 							<cfif listFindNoCase(nodeLevelList,rc.contentBean.getType())>onclick="return confirmDialog('#esapiEncode('javascript',application.rbFactory.getResourceBundle(session.rb).messageFormat(application.rbFactory.getKeyValue(session.rb,'sitemanager.content.deletecontentrecursiveconfirm'),rc.contentBean.getMenutitle()))#',this.href)"<cfelse>onclick="return confirmDialog('#esapiEncode('javascript',application.rbFactory.getKeyValue(session.rb,"sitemanager.content.deletecontentconfirm"))#',this.href)"</cfif>><i class="mi-trash"></i>  #application.rbFactory.getKeyValue(session.rb,"sitemanager.content.deletecontent")#</a></li>
 						</cfif>
+						<cfif rc.contentBean.get('type') eq 'Form' and !rc.contentBean.get('isNew')>
+							<li><a href="./?muraAction=cForm.export&contentid=#esapiEncode('url',rc.contentid)#"><i class="mi-save"></i>  #esapiEncode('html',application.rbFactory.getKeyValue(session.rb,"sitemanager.content.exportnode"))#</a></li>
+							<li><a href="./?muraAction=cForm.importform"><i class="mi-upload"></i>  #esapiEncode('html',application.rbFactory.getKeyValue(session.rb,"sitemanager.content.importnode"))#</a></li>
+						</cfif>
+						<cfif rc.contentBean.get('type') eq 'Component' and !rc.contentBean.get('isNew')>
+							<li><a href="./?muraAction=cArch.exportcomponent&contentid=#esapiEncode('url',rc.contentid)#"><i class="mi-save"></i>  #esapiEncode('html',application.rbFactory.getKeyValue(session.rb,"sitemanager.content.exportnode"))#</a></li>
+							<li><a href="./?muraAction=cArch.importcomponent"><i class="mi-upload"></i>  #esapiEncode('html',application.rbFactory.getKeyValue(session.rb,"sitemanager.content.importnode"))#</a></li>
+						</cfif>
 						</ul>
 						<cfif started>
 						</div>
 						</cfif>
-
 
 						</cfif>
 					</cfif>

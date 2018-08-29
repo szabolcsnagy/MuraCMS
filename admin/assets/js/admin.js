@@ -28,13 +28,10 @@
 	• May not alter the default display of the Mura CMS logo within Mura CMS and
 	• Must not alter any files in the following directories.
 
-	 /admin/
-	 /tasks/
-	 /config/
-	 /requirements/mura/
-	 /Application.cfc
-	 /index.cfm
-	 /MuraProxy.cfc
+	/admin/
+	/core/
+	/Application.cfc
+	/index.cfm
 
 	You may copy and distribute Mura CMS with a plug-in, theme or bundle that meets the above guidelines as a combined work
 	under the terms of GPL for Mura CMS, provided that you include the source code of that other code when and as the GNU GPL
@@ -707,6 +704,10 @@ function preview(url, targetParams) {
 	} else {
 		newWindow = window.open(url, 'previewWin', targetParams);
 	}
+	if(!newWindow || newWindow.closed || typeof newWindow.closed=='undefined') {
+		alertDialog("pop-up window has been blocked for this site,Disable blocking pop-up windows to see the Site Preview");
+		return false;
+	}
 	newWindow.focus();
 	void(0);
 	return false;
@@ -717,8 +718,15 @@ function createCookie(name, value, days) {
 		var date = new Date();
 		date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
 		var expires = "; expires=" + date.toGMTString();
-	} else var expires = "";
-	document.cookie = name + "=" + value + expires + "; path=/";
+	} else {
+		var expires = "";
+	}
+	if(typeof location != 'undefined' && location.protocol == 'https:'){
+		secure='; secure';
+	} else {
+		secure='';
+	}
+	document.cookie = name + "=" + value + expires + "; path=/" + secure;
 }
 
 function readCookie(name) {
@@ -754,7 +762,7 @@ function setHTMLEditors() {
 			}
 
 			var toolbar= allPageTags[i].getAttribute('data-toolbar') || 'Default';
-			
+
 			$(document.getElementById(allPageTags[i].id)).ckeditor({
 				toolbar: toolbar,
 				customConfig: 'config.js.cfm'
@@ -773,7 +781,7 @@ function htmlEditorOnComplete(editorInstance) {
 	if(typeof CKFinder != 'undefined'){
 		CKFinder.setupCKEditor(
 			instance, {
-				basePath: context + '/requirements/ckfinder/',
+				basePath: context + '/core/vendor/ckfinder/',
 				rememberLastFolder: true
 			}
 		);
@@ -831,6 +839,7 @@ function setColorPickers(target) {
 		}).on('changeColor', function(e) {
 			var rgb=e.color.toRGB();
 			$(this).val('rgba('+rgb.r+','+rgb.g+','+rgb.b+','+rgb.a+')');
+			$(this).trigger('change')
 		});
 	});
 }
@@ -940,7 +949,7 @@ function setCheckboxTrees() {
 }
 
 function openFileMetaData(contenthistid,fileid,siteid,property) {
-
+	try{
 		if (typeof fileMetaDataAssign === 'undefined') {
 			fileMetaDataAssign={};
 		}
@@ -988,7 +997,8 @@ function openFileMetaData(contenthistid,fileid,siteid,property) {
 				var pars = 'muraAction=cArch.loadfilemetadata&fileid=' + fileid + '&property=' + property  + '&contenthistid=' + contenthistid + '&siteid=' + siteid + '&cacheid=' + Math.random();
 				$("#newFileMetaContainer .load-inline").spin(spinnerArgs2);
 
-				$.get(url + "?" + pars).done(function(data) {
+				Mura.get(url + "?" + pars).then(
+					function(data) {
 
 					if(data.indexOf('mura-primary-login-token') != -1) {
 						location.href = './';
@@ -1026,10 +1036,11 @@ function openFileMetaData(contenthistid,fileid,siteid,property) {
 
 					$('.filemeta:first').focus();
 
-				}).error(function(data){
+				},
+				function(data){
 					$('#newFileMetaContainer').html(data.responseText);
 					$("#newFileMetaContainer").dialog("option", "position", getDialogPosition());
-				});
+				})
 
 			},
 			close: function() {
@@ -1038,7 +1049,9 @@ function openFileMetaData(contenthistid,fileid,siteid,property) {
 				$.ui.dialog.prototype._focusTabbable=_focusTabbable;
 			}
 		});
-
+	} catch(e){
+		console.log(e)
+	}
 		return false;
 	}
 
@@ -1303,7 +1316,7 @@ function CountDown() {
 
 function fileManagerPopUp() {
 	var finder = new CKFinder();
-	finder.basePath = context + '/requirements/ckfinder/';
+	finder.basePath = context + '/core/vendor/ckfinder/';
 	finder.resourceType = '[Advanced] Mura Root';
 	finder.popup();
 	return false;
@@ -1311,7 +1324,7 @@ function fileManagerPopUp() {
 
 function fileManagerCreate() {
 	var finder = new CKFinder();
-	finder.basePath = context + '/requirements/ckfinder/';
+	finder.basePath = context + '/core/vendor/ckfinder/';
 	finder.create();
 	return false;
 }
@@ -1627,7 +1640,7 @@ function setFinders(selector){
 		$(selector).unbind('click').on('click',function(){
 			var target=$(this).attr('data-target');
 			var finder = new CKFinder();
-			finder.basePath = context + '/requirements/ckfinder/';
+			finder.basePath = context + '/core/vendor/ckfinder/';
 			var completepath=$(this).attr('data-completepath');
 
 			if(completepath.toLowerCase() == 'true'){

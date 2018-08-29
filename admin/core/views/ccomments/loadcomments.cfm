@@ -241,19 +241,19 @@
 								<!--- ACTIONS --->
 								<td class="actions">
 									<a class="show-actions" href="javascript:;" <!---ontouchstart="this.onclick();"---> onclick="showTableControls(this);"><i class="mi-ellipsis-v"></i></a>
-									<div class="actions-menu hide">	
+									<div class="actions-menu hide">
 										<ul class="actions-list">
 											<li><a href="##comment-#local.item.getCommentID()#" data-toggle="modal"><i class="mi-comments"></i>Comments</a></li>
 											<cfif IsValid('url', local.item.getURL())>
 												<li><a href="#esapiEncode('html_attr',local.item.getURL())#" title="#esapiEncode('html_attr',local.item.getURL())#" target="_blank"><i class="mi-link"></i>View</a></li>
-											<!--- 
+											<!---
 											<cfelse>
 												<li class="disabled"><i class="mi-link"></i></li>
-											 --->	
+											 --->
 											</cfif>
 											<li><a href="mailto:#esapiEncode('html',local.item.getEmail())#"><i class="mi-envelope"></i>#application.rbFactory.getKeyValue(session.rb,'user.email')#</a></li>
 										</ul>
-									</div>	
+									</div>
 								</td>
 								<!--- BULK ACTION CHECKBOX --->
 								<td>

@@ -29,13 +29,10 @@
 	• May not alter the default display of the Mura CMS logo within Mura CMS and
 	• Must not alter any files in the following directories.
 
-	 /admin/
-	 /tasks/
-	 /config/
-	 /requirements/mura/
-	 /Application.cfc
-	 /index.cfm
-	 /MuraProxy.cfc
+	/admin/
+	/core/
+	/Application.cfc
+	/index.cfm
 
 	You may copy and distribute Mura CMS with a plug-in, theme or bundle that meets the above guidelines as a combined work
 	under the terms of GPL for Mura CMS, provided that you include the source code of that other code when and as the GNU GPL
@@ -260,13 +257,35 @@ component persistent='false' accessors='true' output='false' extends='controller
 		var origSiteID = arguments.rc.siteID;
 		request.newImageIDList = '';
 
+		//only super users can change super user status
+		if(!getCurrentUser().isSuperUser()){
+			structDelete(arguments.rc,'s2');
+
+			if(isDefined('arguments.rc.userid') && isValid('uuid',arguments.rc.userid)){
+				var userCheck=getBean('userBean').loadBy(userid=arguments.rc.userid,siteid=arguments.rc.siteid);
+				if(userCheck.exists() && userCheck.get('s2')){
+					structDelete(arguments.rc,'username');
+					structDelete(arguments.rc,'password');
+					structDelete(arguments.rc,'password2');
+					structDelete(arguments.rc,'passwordNoCache');
+					structDelete(arguments.rc,'email');
+					structDelete(arguments.rc,'inactive');
+					structDelete(arguments.rc,'isPublic');
+
+					if(arguments.rc.action eq "delete"){
+						arguments.rc.action="invalid";
+					}
+				}
+			}
+		}
+
 		if ( arguments.rc.$.validateCSRFTokens(context=arguments.rc.userid) ) {
 			switch(arguments.rc.action) {
 				case 'Update' :
 					arguments.rc.userBean=getUserManager().update(arguments.rc);
 					break;
 				case 'Delete' :
-					getUserManager().delete(arguments.rc.userid,arguments.rc.type);
+					getUserManager().delete(arguments.rc.userid,arguments.rc.type,true);
 					break;
 				case 'Add' :
 					arguments.rc.userBean=getUserManager().create(arguments.rc);

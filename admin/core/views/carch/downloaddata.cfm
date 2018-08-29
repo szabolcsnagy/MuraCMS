@@ -28,13 +28,10 @@ Your custom code
 • May not alter the default display of the Mura CMS logo within Mura CMS and
 • Must not alter any files in the following directories.
 
- /admin/
- /tasks/
- /config/
- /requirements/mura/
- /Application.cfc
- /index.cfm
- /MuraProxy.cfc
+	/admin/
+	/core/
+	/Application.cfc
+	/index.cfm
 
 You may copy and distribute Mura CMS with a plug-in, theme or bundle that meets the above guidelines as a combined work
 under the terms of GPL for Mura CMS, provided that you include the source code of that other code when and as the GNU GPL
@@ -48,12 +45,12 @@ version 2 without this exception.  You may, if you choose, apply this exception 
 <cfset request.layout=false>
 <cfparam name="rc.columns" default="">
 
-	<!---
-	<cfif len(rc.contentBean.getResponseDisplayFields()) gt 0 and rc.contentBean.getResponseDisplayFields() neq "~">
-		<cfset rc.fieldnames=replace(listLast(rc.contentBean.getResponseDisplayFields(),"~"), "^", ",", "ALL")>
-	<cfelse>--->
-		<cfset rc.fieldnames=application.dataCollectionManager.getCurrentFieldList(rc.contentid)/>
-	<!---</cfif>--->
+<!---
+<cfif len(rc.contentBean.getResponseDisplayFields()) gt 0 and rc.contentBean.getResponseDisplayFields() neq "~">
+	<cfset rc.fieldnames=replace(listLast(rc.contentBean.getResponseDisplayFields(),"~"), "^", ",", "ALL")>
+<cfelse>--->
+	<cfset rc.fieldnames=application.dataCollectionManager.getCurrentFieldList(rc.contentid)/>
+<!---</cfif>--->
 
 <cfset rsdata=application.dataCollectionManager.getData(rc)/>
 <cfset DelimChar=",">

@@ -28,13 +28,10 @@ Your custom code
 • May not alter the default display of the Mura CMS logo within Mura CMS and
 • Must not alter any files in the following directories.
 
- /admin/
- /tasks/
- /config/
- /requirements/mura/
- /Application.cfc
- /index.cfm
- /MuraProxy.cfc
+	/admin/
+	/core/
+	/Application.cfc
+	/index.cfm
 
 You may copy and distribute Mura CMS with a plug-in, theme or bundle that meets the above guidelines as a combined work
 under the terms of GPL for Mura CMS, provided that you include the source code of that other code when and as the GNU GPL
@@ -46,30 +43,8 @@ version 2 without this exception.  You may, if you choose, apply this exception 
 */
 component output="false" {
 
-	include "config/applicationSettings.cfm";
+	include "core/appcfc/applicationSettings.cfm";
 
-	if(not hasMainMappings){
-		//Try and include global mappings;
-		canWriteMode=true;
-		canWriteMappings=true;
-		hasMappings=true;
-
-		try{
-			include "config/mappings.cfm";
-		}
-		catch(any e){
-			if(e.type eq 'missingInclude'){
-				hasMappings=false;
-			}
-		}
-
-		if(not hasMappings){
-			variables.tracePoint=initTracePoint("Writing config/mappings.cfm");
-			include "config/buildMainMappings.cfm";
-			commitTracePoint(variables.tracePoint);
-		}
-
-	}
 
 	if(not hasPluginMappings){
 		//Try and include plugin mappings
@@ -87,7 +62,7 @@ component output="false" {
 
 		if(not hasMappings){
 			variables.tracePoint=initTracePoint("Writing plugin/mappings.cfm");
-			include "config/buildPluginMappings.cfm";
+			include "core/appcfc/buildPluginMappings.cfm";
 			commitTracePoint(variables.tracePoint);
 		}
 
@@ -109,17 +84,17 @@ component output="false" {
 
 		if(not hasMappings){
 			variables.tracePoint=initTracePoint("Writing config/cfapplication.cfm");
-			include "config/buildPluginCFApplication.cfm";
+			include "core/appcfc/buildPluginCFApplication.cfm";
 			commitTracePoint(variables.tracePoint);
 		}
 
 	}
 
-	include "config/appcfc/onApplicationStart_method.cfm";
-	include "config/appcfc/onRequestStart_scriptProtect_method.cfm";
-	include "config/appcfc/onRequestEnd_method.cfm";
-	include "config/appcfc/onSessionStart_method.cfm";
-	include "config/appcfc/onSessionEnd_method.cfm";
-	include "config/appcfc/onError_method.cfm";
-	include "config/appcfc/onMissingTemplate_method.cfm";
+	include "core/appcfc/onApplicationStart_method.cfm";
+	include "core/appcfc/onRequestStart_scriptProtect_method.cfm";
+	include "core/appcfc/onRequestEnd_method.cfm";
+	include "core/appcfc/onSessionStart_method.cfm";
+	include "core/appcfc/onSessionEnd_method.cfm";
+	include "core/appcfc/onError_method.cfm";
+	include "core/appcfc/onMissingTemplate_method.cfm";
 }

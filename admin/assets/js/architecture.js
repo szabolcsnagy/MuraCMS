@@ -28,13 +28,10 @@
 	• May not alter the default display of the Mura CMS logo within Mura CMS and
 	• Must not alter any files in the following directories.
 
-	 /admin/
-	 /tasks/
-	 /config/
-	 /requirements/mura/
-	 /Application.cfc
-	 /index.cfm
-	 /MuraProxy.cfc
+	/admin/
+	/core/
+	/Application.cfc
+	/index.cfm
 
 	You may copy and distribute Mura CMS with a plug-in, theme or bundle that meets the above guidelines as a combined work
 	under the terms of GPL for Mura CMS, provided that you include the source code of that other code when and as the GNU GPL
@@ -472,7 +469,7 @@ buttons: {
 		document.getElementById('newZoom').style.display = '';
 		document.getElementById('newZoomLink').style.display = '';
 
-		if(navperm != 'none' && moduleid != '00000000000000000000000000000000099') {
+		if(navperm != 'none' && moduleid != '00000000000000000000000000000000099' && type.toLowerCase() != 'module') {
 
 			document.getElementById('newCopyLink').href = 'javascript:siteManager.copyThis(\'' + siteid + '\', \'' + contentid + '\',\'false\')';
 			document.getElementById('newCopyAllLink').href = 'javascript:siteManager.copyThis(\'' + siteid + '\', \'' + contentid + '\',\'true\')';
@@ -2717,8 +2714,77 @@ buttons: {
 			}
 		})
 
+		availableObjectParams['cssstyles']={};
+
+		$(".objectStyle, .objectstyle").each(
+
+		function() {
+			var item = $(this);
+			if(item.val() != null && ( item.attr("type") != "radio" || (item.attr("type") == "radio"  && item.is(':checked')) ) ) {
+
+				if(typeof item.attr("name") != 'undefined'){
+					if(typeof availableObjectParams['cssstyles'][item.attr("name")] == 'undefined') {
+						if(item.attr("type") == "checkbox" && !item.is(":checked")){
+							availableObjectParams['cssstyles'][item.attr("name")] = '';
+						} else {
+							availableObjectParams['cssstyles'][item.attr("name")] = item.val();
+						}
+					} else if (!(item.attr("type") == "checkbox" && !item.is(":checked")) ){
+						availableObjectParams['cssstyles'][item.attr("name")] = availableObjectParams['cssstyles'][item.attr("name")] + ',' + item.val();
+					}
+				}
+			}
+		})
+
+		availableObjectParams['metacssstyles']={};
+
+		$(".metaStyle, .metastyle").each(
+
+		function() {
+			var item = $(this);
+			if(item.val() != null && ( item.attr("type") != "radio" || (item.attr("type") == "radio"  && item.is(':checked')) ) ) {
+
+				if(typeof item.attr("name") != 'undefined'){
+					if(typeof availableObjectParams['metacssstyles'][item.attr("name")] == 'undefined') {
+						if(item.attr("type") == "checkbox" && !item.is(":checked")){
+							availableObjectParams['metacssstyles'][item.attr("name")] = '';
+						} else {
+							availableObjectParams['metacssstyles'][item.attr("name")] = item.val();
+						}
+					} else if (!(item.attr("type") == "checkbox" && !item.is(":checked")) ){
+						availableObjectParams['metacssstyles'][item.attr("name")] = availableObjectParams['metacssstyles'][item.attr("name")] + ',' + item.val();
+					}
+				}
+			}
+		})
+
+		availableObjectParams['contentcssstyles']={};
+
+		$(".contentStyle, .contentstyle").each(
+
+		function() {
+			var item = $(this);
+			if(item.val() != null && ( item.attr("type") != "radio" || (item.attr("type") == "radio"  && item.is(':checked')) ) ) {
+
+				if(typeof item.attr("name") != 'undefined'){
+					if(typeof availableObjectParams['contentcssstyles'][item.attr("name")] == 'undefined') {
+						if(item.attr("type") == "checkbox" && !item.is(":checked")){
+							availableObjectParams['contentcssstyles'][item.attr("name")] = '';
+						} else {
+							availableObjectParams['contentcssstyles'][item.attr("name")] = item.val();
+						}
+					} else if (!(item.attr("type") == "checkbox" && !item.is(":checked")) ){
+						availableObjectParams['contentcssstyles'][item.attr("name")] = availableObjectParams['contentcssstyles'][item.attr("name")] + ',' + item.val();
+					}
+				}
+			}
+		})
+
 		this.availableObject = $.extend({}, this.availableObjectTemplate);
 		this.availableObject.params = availableObjectParams;
+		this.availableObject.params.cssstyles=JSON.stringify(this.availableObject.params.cssstyles);
+		this.availableObject.params.metacssstyles=JSON.stringify(this.availableObject.params.metacssstyles);
+		this.availableObject.params.contentcssstyles=JSON.stringify(this.availableObject.params.contentcssstyles);
 
 		if(typeof originParams == 'object'){
 			this.availableObject.params=$.extend(originParams,this.availableObject.params);
@@ -2832,7 +2898,7 @@ buttons: {
 
 	initConfiguratorParams: function() {
 		this.updateAvailableObject();
-		$(".objectParam, .objectparam").bind("change", function() {
+		$(".objectParam, .objectparam, .objectStyle, .objectstyle, .metaStyle, .metastyle, .contentStyle, .contentstyle").bind("change", function() {
 			siteManager.updateAvailableObject();
 		});
 	},

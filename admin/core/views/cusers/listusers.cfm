@@ -29,13 +29,10 @@
 	• May not alter the default display of the Mura CMS logo within Mura CMS and
 	• Must not alter any files in the following directories.
 
-	 /admin/
-	 /tasks/
-	 /config/
-	 /requirements/mura/
-	 /Application.cfc
-	 /index.cfm
-	 /MuraProxy.cfc
+	/admin/
+	/core/
+	/Application.cfc
+	/index.cfm
 
 	You may copy and distribute Mura CMS with a plug-in, theme or bundle that meets the above guidelines as a combined work
 	under the terms of GPL for Mura CMS, provided that you include the source code of that other code when and as the GNU GPL
@@ -90,7 +87,7 @@
 		<div class="mura-control-group">
 
 			<!--- View All / Unassigned Only --->
-				<a class="btn" href="#buildURL(action='cusers.listusers', querystring='siteid=#esapiEncode('url',rc.siteid)#&ispublic=#esapiEncode('url',rc.ispublic)#&unassigned=#esapiEncode('url',rc.unassigned)#')#" onclick="actionModal();">
+				<a class="btn" href="#buildURL(action='cusers.listusers', querystring='siteid=#esapiEncode('url',rc.siteid)#&ispublic=#esapiEncode('url',rc.ispublic)#&unassigned=#esapiEncode('url',rc.unassigned)?0:1#')#" onclick="actionModal();">
 					<i class="mi-filter"></i>
 					<cfif rc.unassigned EQ 0>
 						#rbKey('user.viewunassignedonly')#

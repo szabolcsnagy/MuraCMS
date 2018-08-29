@@ -28,13 +28,10 @@ Your custom code
 • May not alter the default display of the Mura CMS logo within Mura CMS and
 • Must not alter any files in the following directories.
 
- /admin/
- /tasks/
- /config/
- /requirements/mura/
- /Application.cfc
- /index.cfm
- /MuraProxy.cfc
+	/admin/
+	/core/
+	/Application.cfc
+	/index.cfm
 
 You may copy and distribute Mura CMS with a plug-in, theme or bundle that meets the above guidelines as a combined work
 under the terms of GPL for Mura CMS, provided that you include the source code of that other code when and as the GNU GPL
@@ -57,22 +54,22 @@ version 2 without this exception.  You may, if you choose, apply this exception 
 
 				if(!window.CKEDITOR){
 					Mura.loader().loadjs(
-						'#variables.$.globalConfig().getRequirementsPath(complete=1)#/ckeditor/ckeditor.js'
+						'#variables.$.globalConfig().getCorePath(complete=1)#/vendor/ckeditor/ckeditor.js'
 					);
 
-					window.CKEDITOR_BASEPATH = '#variables.$.globalConfig().getRequirementsPath(complete=1)#/ckeditor/';
+					window.CKEDITOR_BASEPATH = '#variables.$.globalConfig().getCorePath(complete=1)#/vendor/ckeditor/';
 				}
 				<cfif not $.getContentRenderer().useLayoutManager()>
 				if(!window.CKFinder){
 					Mura.loader().loadjs(
-						'#variables.$.globalConfig().getRequirementsPath(complete=1)#/ckfinder/ckfinder.js');
+						'#variables.$.globalConfig().getCorePath(complete=1)#/vendor/ckfinder/ckfinder.js');
 
 				}
 				</cfif>
 
 				Mura.loader().loadjs(
 						'#variables.$.globalConfig().getAdminPath(complete=1)#/assets/js/porthole/porthole.min.js?coreversion=#application.coreversion#',
-						'#variables.$.globalConfig().getAdminPath(complete=1)#/assets/js/frontendtools.js.cfm?siteid=#esapiEncode("url",variables.$.event("siteid"))#&contenthistid=#$.content("contenthistid")#&coreversion=#application.coreversion#&showInlineEditor=#getShowInlineEditor()#&cacheid=#createUUID()#&contentType=Variation');
+						'#variables.$.globalConfig().getAdminPath(complete=1)#/assets/js/frontendtools.js.cfm?siteid=#esapiEncode("url",variables.$.event("siteid"))#&contenthistid=#$.content("contenthistid")#&coreversion=#application.coreversion#&showInlineEditor=#getShowInlineEditor()#&contentType=Variation&cacheid=' + Math.random());
 			});
 		</script>
 		</cfoutput>
@@ -82,38 +79,39 @@ version 2 without this exception.  You may, if you choose, apply this exception 
 		<script type="text/javascript" src="#variables.$.globalConfig('adminPath')#/assets/js/porthole/porthole.min.js?coreversion=#application.coreversion#"></script>
 
 		<script>
-			var hasMuraLoader=(typeof(Mura) != 'undefined' && typeof(Mura.loader) != 'undefined');
+			var hasMuraLoader=(typeof Mura != 'undefined' && (typeof Mura.loader != 'undefined' || typeof window.queuedMuraCmds != 'undefined'));
 			if(!window.CKEDITOR){
 				if(hasMuraLoader){
-					Mura.loader().loadjs(
-						'#variables.$.globalConfig("requirementsPath")#/ckeditor/ckeditor.js',
-						'#variables.$.globalConfig("requirementsPath")#/ckeditor/adapters/jquery.js'
-					);
-
+					Mura(function(){
+						Mura.loader().loadjs(
+							'#variables.$.globalConfig("corepath")#/vendor/ckeditor/ckeditor.js'
+						);
+					});
 				} else {
-					$.getScript('#variables.$.globalConfig("requirementsPath")#/ckeditor/ckeditor.js');
-					$.getScript('#variables.$.globalConfig("requirementsPath")#/ckeditor/adapters/jquery.js');
+					$.getScript('#variables.$.globalConfig("corepath")#/vendor/ckeditor/ckeditor.js');
 				}
 
-				window.CKEDITOR_BASEPATH = '#variables.$.globalConfig("requirementsPath")#/ckeditor/';
+				window.CKEDITOR_BASEPATH = '#variables.$.globalConfig("corepath")#/vendor/ckeditor/';
 			}
 
 			<cfif not $.getContentRenderer().useLayoutManager()>
 			if(!window.CKFinder){
 				if(hasMuraLoader){
-					Mura.loader().loadjs(
-						'#variables.$.globalConfig("requirementsPath")#/ckfinder/ckfinder.js');
+					Mura(function(){
+						Mura.loader().loadjs('#variables.$.globalConfig("corepath")#/vendor/ckfinder/ckfinder.js');
+					});
 				} else {
-					$.getScript('#variables.$.globalConfig("requirementsPath")#/ckfinder/ckfinder.js');
+					$.getScript('#variables.$.globalConfig("corepath")#/vendor/ckfinder/ckfinder.js');
 				}
 			}
 			</cfif>
 
 			if(hasMuraLoader){
-				Mura.loader().loadjs(
-						'#variables.$.globalConfig("adminPath")#/assets/js/frontendtools.js.cfm?siteid=#esapiEncode("url",variables.$.event("siteid"))#&contenthistid=#$.content("contenthistid")#&coreversion=#application.coreversion#&showInlineEditor=#getShowInlineEditor()#&cacheid=#createUUID()#');
+				Mura(function(){
+					Mura.loader().loadjs('#variables.$.globalConfig("adminPath")#/assets/js/frontendtools.js.cfm?siteid=#esapiEncode("url",variables.$.event("siteid"))#&contenthistid=#$.content("contenthistid")#&coreversion=#application.coreversion#&showInlineEditor=#getShowInlineEditor()#&cacheid=' + Math.random());
+				});
 			} else {
-				$.getScript('#variables.$.globalConfig("adminPath")#/assets/js/frontendtools.js.cfm?siteid=#esapiEncode("url",variables.$.event("siteid"))#&contenthistid=#$.content("contenthistid")#&coreversion=#application.coreversion#&showInlineEditor=#getShowInlineEditor()#&cacheid=#createUUID()#');
+				$.getScript('#variables.$.globalConfig("adminPath")#/assets/js/frontendtools.js.cfm?siteid=#esapiEncode("url",variables.$.event("siteid"))#&contenthistid=#$.content("contenthistid")#&coreversion=#application.coreversion#&showInlineEditor=#getShowInlineEditor()#&cacheid=' + Math.random());
 			}
 		</script>
 
@@ -231,7 +229,10 @@ version 2 without this exception.  You may, if you choose, apply this exception 
 		</cfsilent>
 		<cfoutput>
 		<div class="mura mura-toolbar">
-			<img src="#variables.$.globalConfig("adminPath")#/assets/images/mura-logo-fe@2x.png" id="frontEndToolsHandle" onclick="if (document.getElementById('frontEndTools').style.display == 'none') { createCookie('FETDISPLAY','',5); } else { createCookie('FETDISPLAY','none',5); } toggleAdminToolbar();" />
+			<a id="frontEndToolsHandle" href="##" onclick="if (document.getElementById('frontEndTools').style.display == 'none') { createCookie('FETDISPLAY','block',5); document.getElementById('mura-fe-logo').src='#variables.$.globalConfig("adminPath")#/assets/images/mura-logo-fe.svg';} else { createCookie('FETDISPLAY','none',5); document.getElementById('mura-fe-logo').src='#variables.$.globalConfig("adminPath")#/assets/images/mura-logo-fe-icon.svg'} toggleAdminToolbar(); return false;">
+				<img id="mura-fe-logo" src="#variables.$.globalConfig("adminPath")#/assets/images/mura-logo-fe<cfif Cookie.fetDisplay eq 'none'>-icon</cfif>.svg" />
+			</a>
+
 			<div id="frontEndTools" style="display: #Cookie.fetDisplay#">
 				<cfif $.currentUser().isLoggedIn() and not request.contentBean.getIsNew()>
 
@@ -368,7 +369,7 @@ version 2 without this exception.  You may, if you choose, apply this exception 
 										</li>
 									<cfelseif useLayoutManager()>
 										<cfset tabAssignments=$.currentUser().getContentTabAssignments()>
-										<cfif not len(tabAssignments) or listFindNocase(tabAssignments,'Layout & Objects') or listFindNocase(tabAssignments,'Layout')>
+										<cfif not len(tabAssignments) or listFindNocase(tabAssignments,'Layout & Objects') or listFindNocase(tabAssignments,'Layout') or listFindNocase(tabAssignments,'Basic')>
 										<li id="adminQuickEdit">
 											<a onclick="return MuraInlineEditor.init();"><i class="mi-pencil"></i>
 												#application.rbFactory.getKeyValue(session.rb,'sitemanager.content.edit-layout')#
@@ -421,8 +422,9 @@ version 2 without this exception.  You may, if you choose, apply this exception 
 							</cfif>
 							<!---</cfif>--->
 
-						<li><a href="#variables.adminLink#" title="#application.rbFactory.getKeyValue(session.rb,'layout.sitemanager')#" target="admin"><i class="mi-sitemap"></i></a></li>
-
+							<cfif $.currentUser().isPrivateUser()>
+								<li><a href="#variables.adminLink#" title="#application.rbFactory.getKeyValue(session.rb,'layout.sitemanager')#" target="admin"><i class="mi-sitemap"></i></a></li>
+							</cfif>
 
 						</ul>
 					</cfif>
@@ -441,7 +443,7 @@ version 2 without this exception.  You may, if you choose, apply this exception 
 							<cfset rsChangesets=application.changesetManager.getQuery(siteID=$.event('siteID'),published=0,sortby="PublishDate")>
 							<ul id="tools-changesets">
 
-								<li id="cs-title" class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown"><i>CS</i><cfif request.muraChangesetPreview>#esapiEncode('html',previewData.name)#<cfif isDate(previewData.publishDate)> (#LSDateFormat(previewData.publishDate,session.dateKeyFormat)#)</cfif><cfelse>None Selected</cfif><b class="caret"></b></a>
+								<li id="cs-title" class="dropdown"><a id="cs-title-text" class="dropdown-toggle" data-toggle="dropdown"><i>CS</i><cfif request.muraChangesetPreview>#esapiEncode('html',previewData.name)#<cfif isDate(previewData.publishDate)> (#LSDateFormat(previewData.publishDate,session.dateKeyFormat)#)</cfif><cfelse>None Selected</cfif><b class="caret"></b></a>
 									<ul class="dropdown-menu">
 										<li><a href="./?changesetid=">None</a></li>
 										<cfloop query="rsChangesets">
@@ -521,7 +523,7 @@ version 2 without this exception.  You may, if you choose, apply this exception 
 
 				<cfif $.currentUser().isLoggedIn()>
 					<ul id="tools-user">
-						<li id="adminLogOut"><a href="?doaction=logout" title="#application.rbFactory.getKeyValue(session.rb,'layout.logout')#"><i class="mi-sign-out"></i>#application.rbFactory.getKeyValue(session.rb,'layout.logout')#</a></li>
+						<li id="adminLogOut"><a href="?doaction=logout" title="#application.rbFactory.getKeyValue(session.rb,'layout.logout')#"><i class="mi-sign-out"></i><span>#application.rbFactory.getKeyValue(session.rb,'layout.logout')#</span></a></li>
 						<li id="adminWelcome"><i class="mi-user"></i> #esapiEncode("html","#session.mura.fname# #session.mura.lname#")#</li>
 					</ul>
 				</cfif>

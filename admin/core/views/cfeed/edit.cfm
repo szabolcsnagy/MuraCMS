@@ -28,13 +28,10 @@ Your custom code
 • May not alter the default display of the Mura CMS logo within Mura CMS and
 • Must not alter any files in the following directories.
 
- /admin/
- /tasks/
- /config/
- /requirements/mura/
- /Application.cfc
- /index.cfm
- /MuraProxy.cfc
+	/admin/
+	/core/
+	/Application.cfc
+	/index.cfm
 
 You may copy and distribute Mura CMS with a plug-in, theme or bundle that meets the above guidelines as a combined work
 under the terms of GPL for Mura CMS, provided that you include the source code of that other code when and as the GNU GPL
@@ -309,7 +306,7 @@ version 2 without this exception.  You may, if you choose, apply this exception 
 									<cfif item.exists()>
 										<cfset started=true>
 										<tr id="c#rc.rslist.contentID#">
-											<td class="actions"><input type="hidden" name="contentID" value="#rc.rslist.contentid#" /><ul class="clearfix"><li class="delete"><a title="Delete" href="##" onclick="return feedManager.removeFilter('c#rc.rslist.contentid#');"><i class="mi-trash"></i></a></li></ul></td>
+											<td class="actions"><input type="hidden" name="contentID" value="#rc.rslist.contentid#" /><ul class="clearfix"><li class="delete"><a title="Delete" href="##" onclick="feedManager.removeFilter('c#rc.rslist.contentid#'); return false;"><i class="mi-trash"></i></a></li></ul></td>
 											<td class="var-width">#$.dspZoomNoLinks(item.getCrumbArray())#</td>
 											<td>#rc.rslist.type#</td>
 										</tr>
@@ -758,7 +755,7 @@ version 2 without this exception.  You may, if you choose, apply this exception 
 	</div> <!-- /.block-bordered -->
 </div> <!-- /.tab-pane -->
 
-<cfif rc.feedID neq ''>
+<cfif application.configBean.getValue(property='showUsageTabs',defaultValue=true) and rc.feedID neq ''>
 	<cfinclude template="dsp_tab_usage.cfm">
 </cfif>
 </cfif>
@@ -774,12 +771,12 @@ version 2 without this exception.  You may, if you choose, apply this exception 
 		<input type="hidden" name="action" value="add">
 	<cfelse>
 		<cfif rc.compactDisplay neq "true">
-			<button class="btn" onclick="submitForm(document.forms.form1,'delete','#esapiEncode('javascript',application.rbFactory.getKeyValue(session.rb,'collections.deletelocalconfirm'))#');"><i class="mi-trash"></i>#application.rbFactory.getKeyValue(session.rb,'collections.delete')#</button>
+			<button class="btn" onclick="submitForm(document.forms.form1,'delete','#esapiEncode('javascript',application.rbFactory.getKeyValue(session.rb,'collections.deletelocalconfirm'))#');return false;"><i class="mi-trash"></i>#application.rbFactory.getKeyValue(session.rb,'collections.delete')#</button>
 		</cfif>
 		<cfif isObjectInstance>
-			<button class="btn" onclick="updateInstanceObject();submitForm(document.forms.form1,'update');"><i class="mi-check-circle"></i>#application.rbFactory.getKeyValue(session.rb,'collections.update')#</button>
+			<button class="btn" onclick="updateInstanceObject();submitForm(document.forms.form1,'update');return false;"><i class="mi-check-circle"></i>#application.rbFactory.getKeyValue(session.rb,'collections.update')#</button>
 		<cfelse>
-			<button class="btn mura-primary" onclick="submitForm(document.forms.form1,'update');"><i class="mi-check-circle"></i>#application.rbFactory.getKeyValue(session.rb,'collections.update')#</button>
+			<button class="btn mura-primary" onclick="submitForm(document.forms.form1,'update');return false;"><i class="mi-check-circle"></i>#application.rbFactory.getKeyValue(session.rb,'collections.update')#</button>
 		</cfif>
 		<cfif rc.compactDisplay eq "true">
 			<input type="hidden" name="homeID" value="#rc.homeID#" />
@@ -1051,7 +1048,7 @@ jQuery(document).ready(function(){
 
 </cfif>
 
-<cfif rc.feedID neq ''>
+<cfif application.configBean.getValue(property='showUsageTabs',defaultValue=true) and rc.feedID neq ''>
 	<cfinclude template="dsp_tab_usage.cfm">
 </cfif>
 </cfsavecontent>
