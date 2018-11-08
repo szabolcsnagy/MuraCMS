@@ -194,6 +194,8 @@ version 2 without this exception.  You may, if you choose, apply this exception 
 <cfset variables.instance.siteDir=""/>
 <cfset variables.instance.legacyAppcfcSupport=false>
 <cfset variables.instance.showUsageTags=true>
+<cfset variables.instance.offline404=true>
+<cfset variables.instance.externalConfig="">
 
 <cffunction name="OnMissingMethod" output="false" hint="Handles missing method exceptions.">
 <cfargument name="MissingMethodName" type="string" required="true" hint="The name of the missing method." />
@@ -1742,16 +1744,19 @@ version 2 without this exception.  You may, if you choose, apply this exception 
 </cffunction>
 
 <cffunction name="getScheme" output="false">
-	<cfreturn YesNoFormat(getValue('adminSSL')) ? 'https' : 'http' />
+	<cfargument name="secure" default="#getValue('adminSSL')#">
+	<cfreturn (arguments.secure || YesNoFormat(getValue('adminSSL')) || getBean('utility').isHTTPS()) ? 'https' : 'http' />
 </cffunction>
 
 <cffunction name="getAdminPath" output="false">
 	<cfargument name="useProtocol" default="1">
-	<cfif len( getValue('admindomain') )>
+	<cfargument name="domain" default="#getValue('admindomain')#">
+
+	<cfif len( arguments.domain )>
 		<cfif arguments.useProtocol>
-			<cfreturn getScheme() & '://' & getValue('admindomain') & getServerPort() & getValue('context') & getValue('adminDir')>
+			<cfreturn getScheme() & '://' & arguments.domain & getServerPort() & getValue('context') & getValue('adminDir')>
 		<cfelse>
-			<cfreturn '//' & getValue('admindomain') & getServerPort() & getValue('context') & getValue('adminDir')>
+			<cfreturn '//' & arguments.domain & getServerPort() & getValue('context') & getValue('adminDir')>
 		</cfif>
 	<cfelse>
 		<cfreturn getValue('context') &  getValue('adminDir')>
@@ -1760,12 +1765,13 @@ version 2 without this exception.  You may, if you choose, apply this exception 
 
 <cffunction name="getPluginsPath" output="false">
 	<cfargument name="useProtocol" default="1">
+	<cfargument name="secure" default="#getValue('adminSSL')#">
 	<cfif len(variables.instance.pluginsPath)>
 		<cfreturn variables.instance.pluginsPath>
 	<cfelse>
 		<cfif len( getValue('admindomain') )>
 			<cfif arguments.useProtocol>
-				<cfreturn getScheme() & '://' & getValue('admindomain') & getServerPort() & getValue('context') & "/plugins">
+				<cfreturn getScheme(arguments.secure) & '://' & getValue('admindomain') & getServerPort() & getValue('context') & "/plugins">
 			<cfelse>
 				<cfreturn '//' & getValue('admindomain') & getServerPort() & getValue('context') & "/plugins">
 			</cfif>
@@ -1777,12 +1783,17 @@ version 2 without this exception.  You may, if you choose, apply this exception 
 
 <cffunction name="getCorePath" output="false">
 	<cfargument name="useProtocol" default="1">
+	<cfargument name="secure" default="#getValue('adminSSL')#">
 
 	<cfif len(variables.instance.corepath)>
 		<cfreturn variables.instance.corepath>
 	<cfelse>
 		<cfif len( getValue('admindomain') )>
-			<cfreturn getScheme() & '://' & getValue('admindomain') & getServerPort() & getValue('context') & "/core">
+			<cfif arguments.useProtocol>
+				<cfreturn getScheme(arguments.secure) & '://' & getValue('admindomain') & getServerPort() & getValue('context') & "/core">
+			<cfelse>
+				<cfreturn '//' & getValue('admindomain') & getServerPort() & getValue('context') & "/core">
+			</cfif>
 		<cfelse>
 			<cfreturn getValue('context') & "/core">
 		</cfif>
@@ -1791,6 +1802,7 @@ version 2 without this exception.  You may, if you choose, apply this exception 
 
 <cffunction name="getRequirementsPath" output="false">
 	<cfargument name="useProtocol" default="1">
+	<cfargument name="secure" default="#getValue('adminSSL')#">
 	<cfreturn getCorePath(argumentCollection=arguments) & "/externals">
 </cffunction>
 
@@ -1975,14 +1987,17 @@ version 2 without this exception.  You may, if you choose, apply this exception 
 				<cfparam name="request.muraAppliedHandlers" default="#structNew()#">
 
 				<cfloop list="#arguments.siteid#" index="local.i">
-					<cfif structKeyExists(request.muraAppliedHandlers,'#package#.#beanName#')>
-						<cfset arguments.applyGlobal=false>
-					</cfif>
-					<cfset getBean('pluginManager').addEventHandler(component=beanInstance,siteid=local.i,applyglobal=arguments.applyGlobal)>
-					<cfset request.muraAppliedHandlers['#package#.#beanName#']=true>
-					<cfif isDefined('beanInstance.onApplicationLoad') and arguments.applyGlobal>
-						<cfset $=getBean('$').init()>
-						<cfset beanInstance.onApplicationLoad($=$,m=$,Mura=$,event=$.event())>
+					<cfif not structKeyExists(request.muraAppliedHandlers,'#local.i#_#package#.#beanName#')>
+						<cfif structKeyExists(request.muraAppliedHandlers,'#package#.#beanName#')>
+							<cfset arguments.applyGlobal=false>
+						</cfif>
+						<cfset getBean('pluginManager').addEventHandler(component=beanInstance,siteid=local.i,applyglobal=arguments.applyGlobal)>
+						<cfset request.muraAppliedHandlers['#package#.#beanName#']=true>
+						<cfset request.muraAppliedHandlers['#local.i#_#package#.#beanName#']=true>
+						<cfif isDefined('beanInstance.onApplicationLoad') and arguments.applyGlobal>
+							<cfset $=getBean('$').init()>
+							<cfset beanInstance.onApplicationLoad($=$,m=$,Mura=$,event=$.event())>
+						</cfif>
 					</cfif>
 				</cfloop>
 				<cfset commitTracepoint(tracepoint)>

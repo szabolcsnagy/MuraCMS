@@ -33,8 +33,34 @@
 		<cfparam name="attributes.params.cssid" default="">
 		<cfparam name="attributes.params.label" default="">
 		<cfparam name="attributes.params.object" default="">
+
+		<cfif not (isDefined("attributes.params.cssstyles") and isStruct(attributes.params.cssstyles))>
+			<cfif isDefined("attributes.params.cssstyles") and isJSON(attributes.params.cssstyles)>
+				<cfset attributes.params.cssstyles=deserializeJSON(attributes.params.cssstyles)>
+			<cfelse>
+				<cfset attributes.params.cssstyles={}>
+			</cfif>
+		</cfif>
+
+		<cfif not (isDefined("attributes.params.metacssstyles") and isStruct(attributes.params.metacssstyles))>
+			<cfif isDefined("attributes.params.metacssstyles") and isJSON(attributes.params.metacssstyles)>
+				<cfset attributes.params.metacssstyles=deserializeJSON(attributes.params.metacssstyles)>
+			<cfelse>
+				<cfset attributes.params.metacssstyles={}>
+			</cfif>
+		</cfif>
+		<cfif not (isDefined("attributes.params.contentcssstyles") and isStruct(attributes.params.contentcssstyles))>
+			<cfif isDefined("objectParams.contentcssstyles") and isJSON(attributes.params.contentcssstyles)>
+				<cfset attributes.params.contentcssstyles=deserializeJSON(attributes.params.contentcssstyles)>
+			<cfelse>
+				<cfset attributes.params.contentcssstyles={}>
+			</cfif>
+		</cfif>
+
 		<cfparam name="attributes.params.cssstyles.backgroundImage" default="">
 		<cfparam name="attributes.params.cssstyles.backgroundColor" default="rgba(255,0,0,0)">
+
+
 		<cfparam name="attributes.params.isbodyobject" default="false">
 		<cfif not request.hasbasicoptions>
 		<cfset request.hasbasicoptions=attributes.basictab>
@@ -42,7 +68,7 @@
 
 	</cfsilent>
 
-	<cfif $.getContentRenderer().useLayoutManager() and not listFindNoCase('folder,gallery,calendar',attributes.params.object) and not (IsBoolean(attributes.params.isbodyobject) and attributes.params.isbodyobject)>
+	<cfif $.getContentRenderer().useLayoutManager()>
 	<cfoutput>
 	<cfset request.muraconfiguratortag=true>
 	<div id="availableObjectContainer"<cfif not attributes.configurable> style="display:none"</cfif>>
@@ -69,12 +95,13 @@
 	<cfif $.getContentRenderer().useLayoutManager()>
 
 	<cfoutput>
-		<cfif not listFindNoCase('folder,gallery,calendar',attributes.params.object) and not (IsBoolean(attributes.params.isbodyobject) and attributes.params.isbodyobject)>
+
 		<cfif request.hasmetaoptions or request.hasbasicoptions>
 				</div> <!--- /end  mura-panel-collapse --->
 			</div> <!--- /end  mura-panel-body --->
 		</div> <!--- /end panel --->
 		</cfif>
+		<cfif not listFindNoCase('folder,gallery,calendar',attributes.params.object) and not (IsBoolean(attributes.params.isbodyobject) and attributes.params.isbodyobject)>
 		<!--- Postioning--->
 		<div class="mura-panel panel">
 			<div class="mura-panel-heading" role="tab" id="heading-positioning">
@@ -135,7 +162,7 @@
 				</div> <!--- /end  mura-panel-collapse --->
 			</div> <!--- /end  mura-panel-body --->
 		</div> <!--- /end panel --->
-
+		</cfif>
 		<div class="mura-panel panel">
 			<div class="mura-panel-heading" role="tab" id="heading-style">
 				<h4 class="mura-panel-title">
@@ -258,7 +285,6 @@
 				</div> <!--- /end  mura-panel-body --->
 			</div> <!--- /end  mura-panel-collapse --->
 		</div> <!--- /end panel --->
-	</cfif>
 	</div><!--- /end panels --->
 	</cfoutput>
 </div> <!--- /end availableObjectContainer --->
@@ -266,6 +292,7 @@
 		$(function(){
 
 			var inited=false;
+			/*
 			$('#backgroundImageRaw').on('change',function(){
 					$('#backgroundImage').val('url(' + $(this).val() + ')').trigger('change');
 			})
@@ -281,7 +308,7 @@
 			$('#backgroundImageClear').on('click',function(){
 					$('#backgroundImage').val('').trigger('change');
 			})
-
+			*/
 			$('input[name="cssclass"],select[name="alignment"],select[name="width"],select[name="offset"]').on('change', function() {
 				setPlacementVisibility();
 			});

@@ -23,16 +23,27 @@
 
 	var utility=Mura;
 
+	utility('mura-editable-label').show();
+
 	var adminProxy;
+
 	<cfif len($.globalConfig('admindomain'))>
 		var adminDomain="#$.globalConfig('admindomain')#";
-		var adminProtocal=<cfif application.configBean.getAdminSSL() or application.utility.isHTTPS()>"https://";<cfelse>"http://"</cfif>;
-		var adminProxyLoc=adminProtocal + adminDomain + "#$.globalConfig('serverPort')##$.globalConfig('context')##$.globalConfig('adminDir')#/assets/js/porthole/proxy.html";
-		var adminLoc=adminProtocal + adminDomain + "#$.globalConfig('serverPort')##$.globalConfig('context')##$.globalConfig('adminDir')#/";
-		var frontEndProxyLoc= location.protocol + "//" + location.hostname + "#$.globalConfig('serverPort')#";
+	<cfelseif $.siteConfig().getValue('isRemote')>
+		var adminDomain="#$.siteConfig().getValue('resourceDomain')#";
 	<cfelse>
 		var adminDomain="";
-		var adminProtocal="";
+	</cfif>
+
+	<cfif len($.globalConfig('admindomain')) or $.event('contenttype') eq 'variation' or ($.siteConfig('isRemote') and len($.siteConfig().getValue('resourceDomain')))>
+		var adminProxyLoc="#$.siteConfig().getAdminPath(complete=1)#/assets/js/porthole/proxy.html";
+		var adminLoc="#$.siteConfig().getAdminPath(complete=1)#/";
+		var frontEndProxyLoc= location.protocol + "//" + location.hostname;
+
+		if(location.port){
+			frontEndProxyLoc+=':' + location.port;
+		}
+	<cfelse>
 		var adminProxyLoc="#$.globalConfig('context')##$.globalConfig('adminDir')#/assets/js/porthole/proxy.html";
 		var adminLoc="#$.globalConfig('context')##$.globalConfig('adminDir')#/";
 		var frontEndProxyLoc="";
@@ -2368,7 +2379,8 @@
 							contenthistid: Mura.contenthistid,
 							contentid: Mura.contentid,
 							parentid: Mura.parentid,
-							moduleid: Mura.moduleid
+							moduleid: Mura.moduleid,
+							id: Mura.contenthistid
 						}
 						).save().then(function(){
 							saveSelectors();

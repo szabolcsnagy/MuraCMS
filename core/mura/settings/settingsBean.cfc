@@ -1245,12 +1245,12 @@ component extends="mura.bean.beanExtendable" entityName="site" table="tsettings"
 		return application.settingsManager.read(argumentCollection=arguments);
 	}
 
-	public function getScheme() output=false {
-		return YesNoFormat(getValue('useSSL')) ? 'https' : 'http';
+	public function getScheme(secure=false) output=false {
+		return (arguments.secure || YesNoFormat(getValue('useSSL'))  || getBean('utility').isHTTPS()) ? 'https' : 'http';
 	}
 
-	public function getProtocol() output=false {
-		return UCase(getScheme());
+	public function getProtocol(secure=false) output=false {
+		return UCase(getScheme(arguments.secure));
 	}
 
 	public function getRazunaSettings() output=false {
@@ -1363,8 +1363,23 @@ component extends="mura.bean.beanExtendable" entityName="site" table="tsettings"
 		}
 	}
 
-	public function getAdminPath(useProtocol="1") output=false {
-		return getBean('configBean').getAdminPath(argumentCollection=arguments);
+	public function getAdminPath(useProtocol="1",complete="0",domain="",secure="#getValue('useSSL')#") output=false {
+		if(len(application.configBean.getAdminDomain())){
+			arguments.domain=application.configBean.getAdminDomain();
+			arguments.complete=1;
+		}
+		if(!(getValue('isRemote') && len(getValue('resourceDomain'))) && len(application.configBean.getAdminDomain())){
+			arguments.useProtocol=1;
+			arguments.complete=1;
+			return application.configBean.getAdminPath(argumentCollection=arguments);
+		} else {
+			if(application.configBean.getAdminSSL()){
+				arguments.useProtocol=1;
+				arguments.complete=1;
+			}
+			return getResourcePath(argumentCollection=arguments) & application.configBean.getAdminDir();
+		}
+
 	}
 
 	public function getWebPath(secure="#getValue('useSSL')#", complete="0", domain="", useProtocol="1") output=false {
@@ -1376,7 +1391,7 @@ component extends="mura.bean.beanExtendable" entityName="site" table="tsettings"
 				if(getValue('isRemote') ){
 					arguments.domain=getValue('domain');
 				} else {
-					if ( len(cgi.server_name) && isValidDomain(domain=cgi.server_name,mode='complete') ) {
+					if ( len(cgi.server_name) && !get('EnforcePrimaryDomain') && isValidDomain(domain=cgi.server_name,mode='complete') ) {
 						arguments.domain=cgi.server_name;
 					} else {
 						arguments.domain=getValue('domain');
@@ -1387,7 +1402,7 @@ component extends="mura.bean.beanExtendable" entityName="site" table="tsettings"
 				if ( arguments.secure ) {
 					return 'https://' & arguments.domain & getServerPort() & getContext();
 				} else {
-					return getScheme() & '://' & arguments.domain & getServerPort() & getContext();
+					return getScheme(arguments.secure) & '://' & arguments.domain & getServerPort() & getContext();
 				}
 			} else {
 				return '//' & arguments.domain & getServerPort() & getContext();
@@ -1398,19 +1413,20 @@ component extends="mura.bean.beanExtendable" entityName="site" table="tsettings"
 	}
 
 	public function getEndpoint(secure="#getValue('useSSL')#", complete="0", domain="", useProtocol="1") output=false {
-		return getWebPath(argumentCollection=arguments);
+		return getResourcePath(argumentCollection=arguments);
 	}
 
 	public function getRootPath(secure="#getValue('useSSL')#", complete="0", domain="", useProtocol="1") output=false {
-		return getWebPath(argumentCollection=arguments);
+		return getResourcePath(argumentCollection=arguments);
 	}
 
-	public function getResourcePath(complete="0", domain="", useProtocol="1") output=false {
+	public function getResourcePath(complete="0", domain="", useProtocol="1",secure="#getValue('useSSL')#") output=false {
+
 		if ( len(request.muraPreviewDomain) && isValidDomain(domain=request.muraPreviewDomain,mode='complete') ) {
 			arguments.domain=request.muraPreviewDomain;
 		}
 		if ( !isDefined('arguments.domain') || !len(arguments.domain) ) {
-			if ( len(cgi.server_name) && isValidDomain(domain=cgi.server_name,mode='complete') ) {
+			if ( len(cgi.server_name) && !get('EnforcePrimaryDomain') && isValidDomain(domain=cgi.server_name,mode='complete') ) {
 				arguments.domain=cgi.server_name;
 			} else {
 				arguments.domain=getValue('domain');
@@ -1419,10 +1435,10 @@ component extends="mura.bean.beanExtendable" entityName="site" table="tsettings"
 		if ( getValue('isRemote') && len(getValue('resourceDomain')) ) {
 			var configBean=getBean('configBean');
 			if ( arguments.useProtocol ) {
-				if ( getValue('resourceSSL') ) {
+				if (getValue('resourceSSL') || getValue('useSSL')  ) {
 					return "https://" & getValue('resourceDomain') & configBean.getServerPort() & configBean.getContext();
 				} else {
-					return "http://" & getValue('resourceDomain') & configBean.getServerPort() & configBean.getContext();
+					return getScheme(arguments.secure) & '://' & getValue('resourceDomain') & configBean.getServerPort() & configBean.getContext();
 				}
 			} else {
 				return "//" & getValue('resourceDomain') & configBean.getServerPort() & configBean.getContext();
@@ -1439,11 +1455,27 @@ component extends="mura.bean.beanExtendable" entityName="site" table="tsettings"
 	}
 
 	public function getCorePath(secure="#getValue('useSSL')#", complete="0", useProtocol="1") output=false {
-		return getResourcePath(argumentCollection=arguments) & "/core";
+		if(!(getValue('isRemote') && len(getValue('resourceDomain'))) && len(application.configBean.getAdminDomain())){
+			arguments.complete=1;
+			return application.configBean.getCorePath(argumentCollection=arguments);
+		} else {
+			if(application.configBean.getAdminSSL()){
+				arguments.complete=1;
+			}
+			return getResourcePath(argumentCollection=arguments) & "/core";
+		}
 	}
 
 	public function getPluginsPath(secure="#getValue('useSSL')#", complete="0", useProtocol="1") output=false {
-		return getResourcePath(argumentCollection=arguments) & "/plugins";
+		if(!(getValue('isRemote') && len(getValue('resourceDomain'))) && len(application.configBean.getAdminDomain())){
+			arguments.complete=1;
+			return application.configBean.getPluginsPath(argumentCollection=arguments);
+		} else {
+			if(application.configBean.getAdminSSL()){
+				arguments.complete=1;
+			}
+			return getResourcePath(argumentCollection=arguments) & "/plugins";
+		}
 	}
 
 	public function getAccessControlOriginDomainList() output=false {
@@ -1456,6 +1488,13 @@ component extends="mura.bean.beanExtendable" entityName="site" table="tsettings"
 				thelist = listAppend(thelist,application.configBean.getAdminDomain());
 			}
 		}
+
+		if ( getValue("isRemote") && len(getValue("resourceDomain")) ) {
+			if ( !ListFindNoCase(thelist, getValue("resourceDomain")) ) {
+				thelist = listAppend(thelist,getValue("resourceDomain"));
+			}
+		}
+
 		if ( len(getValue('domainAlias')) ) {
 			for(i in listToArray(getValue('domainAlias'),lineBreak) ){
 				if ( !ListFindNoCase(thelist, i ) ) {
@@ -1466,6 +1505,7 @@ component extends="mura.bean.beanExtendable" entityName="site" table="tsettings"
 		return thelist;
 	}
 
+	//This is no longer used
 	public function getAccessControlOriginList() output=false {
 		var thelist="http://#getValue('domain')#,https://#getValue('domain')#";
 		var adminSSL=application.configBean.getAdminSSL();
@@ -1533,7 +1573,34 @@ component extends="mura.bean.beanExtendable" entityName="site" table="tsettings"
 		return getBean('configBean').getVersion();
 	}
 
-	public function registerDisplayObject(object, name="", displaymethod="", displayObjectFile="", configuratorInit="", configuratorJS="", contenttypes="", omitcontenttypes="", condition="true", legacyObjectFile="", custom="true", iconclass="mi-cog", cacheoutput="true") output=false {
+	public function registerDisplayObject(object, name="", displaymethod="", displayObjectFile="", configuratorInit="", configuratorJS="", contenttypes="", omitcontenttypes="", condition="true", legacyObjectFile="", custom="true", iconclass="mi-cog", cacheoutput="true", external="false" ,configurator="") output=false {
+
+		if(!structKeyExists(arguments,'condition')){
+			arguments.condition=true;
+		}
+		if(!structKeyExists(arguments,'contenttypes')){
+			arguments.contenttypes="";
+		}
+		if(!structKeyExists(arguments,'omitcontenttypes')){
+			arguments.omitcontenttypes='';
+		}
+		if(!structKeyExists(arguments,'iconclass')){
+			arguments.iconclass="mi-cog";
+		}
+		if(!structKeyExists(arguments,'custom')){
+			arguments.custom="mi-cog";
+		}
+		if(!structKeyExists(arguments,'cacheoutput')){
+			arguments.cacheoutput=true;
+		}
+		//Used with external modules
+		if(!structKeyExists(arguments,'external')){
+			arguments.external=false;
+		}
+		if(!structKeyExists(arguments,'configurator')){
+			arguments.configurator="";
+		}
+
 		arguments.objectid=arguments.object;
 		variables.instance.displayObjectLookup['#arguments.object#']=arguments;
 		return this;

@@ -61,9 +61,29 @@ version 2 without this exception.  You may, if you choose, apply this exception 
 	<cfelse>
 		<cfset objectParams={}>
 	</cfif>
-	<cfparam name="objectParams.cssstyles" default="#structNew()#">
-	<cfparam name="objectParams.metacssstyles" default="#structNew()#">
-	<cfparam name="objectParams.contentcssstyles" default="#structNew()#">
+	<cfif not (isDefined("objectParams.cssstyles") and isStruct(objectParams.cssstyles))>
+		<cfif isDefined("objectParams.cssstyles") and isJSON(objectParams.cssstyles)>
+			<cfset objectParams.cssstyles=deserializeJSON(objectParams.cssstyles)>
+		<cfelse>
+			<cfset objectParams.cssstyles={}>
+		</cfif>
+	</cfif>
+
+	<cfif not (isDefined("objectParams.metacssstyles") and isStruct(objectParams.metacssstyles))>
+		<cfif isDefined("objectParams.metacssstyles") and isJSON(objectParams.metacssstyles)>
+			<cfset objectParams.metacssstyles=deserializeJSON(objectParams.metacssstyles)>
+		<cfelse>
+			<cfset objectParams.metacssstyles={}>
+		</cfif>
+	</cfif>
+	<cfif not (isDefined("objectParams.contentcssstyles") and isStruct(objectParams.contentcssstyles))>
+		<cfif isDefined("objectParams.contentcssstyles") and isJSON(objectParams.contentcssstyles)>
+			<cfset objectParams.contentcssstyles=deserializeJSON(objectParams.contentcssstyles)>
+		<cfelse>
+			<cfset objectParams.contentcssstyles={}>
+		</cfif>
+	</cfif>
+
 	<cfset data=structNew()>
 	<cfset filefound=false>
 	<cfset $=rc.$>
@@ -89,7 +109,13 @@ version 2 without this exception.  You may, if you choose, apply this exception 
 	<cfif rc.container eq 'layout'>
 		<cfset configFileSuffix="#rc.classid#/layout/index.cfm">
 	<cfelse>
-		<cfset configFileSuffix="#rc.classid#/configurator.cfm">
+		<cfset objectConfig=rc.$.siteConfig().getDisplayObject(rc.classid)>
+
+		<cfif isDefined('objectConfig.external') and objectConfig.external>
+			<cfset configFileSuffix="external/configurator.cfm">
+		<cfelse>
+			<cfset configFileSuffix="#rc.classid#/configurator.cfm">
+		</cfif>
 	</cfif>
 
 	<cfset configFile=rc.$.siteConfig().lookupDisplayObjectFilePath(configFileSuffix)>

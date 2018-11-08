@@ -1076,15 +1076,15 @@ version 2 without this exception.  You may, if you choose, apply this exception 
 				<cfset newBean.setTitle(newBean.getmenutitle())>
 			</cfif>
 
-			<cfif listFindNoCase('Variation,Component,Form,Module',newBean.getType()) or newBean.getmenuTitle() eq ''>
+			<cfif listFindNoCase('Variation,Component,Form,Module',newBean.getType()) or newBean.getmenuTitle() eq '' or newBean.getModuleID() neq '00000000000000000000000000000000000'>
 				<cfset newBean.setmenutitle(newBean.getTitle())>
 			</cfif>
 
-			<cfif listFindNoCase('Variation,Component,Form,Module',newBean.getType()) or newBean.getURLTitle() eq ''>
+			<cfif listFindNoCase('Variation,Component,Form,Module',newBean.getType()) or newBean.getURLTitle() eq '' or newBean.getModuleID() neq '00000000000000000000000000000000000'>
 				<cfset newBean.setURLTitle(getBean('contentUtility').formatFilename(newBean.getmenutitle()))>
 			</cfif>
 
-			<cfif listFindNoCase('Variation,Component,Form,Module',newBean.getType()) or newBean.getHTMLTitle() eq ''>
+			<cfif listFindNoCase('Variation,Component,Form,Module',newBean.getType()) or newBean.getHTMLTitle() eq '' or newBean.getModuleID() neq '00000000000000000000000000000000000'>
 				<cfset newBean.setHTMLTitle(newBean.getTitle())>
 			</cfif>
 
@@ -2632,8 +2632,9 @@ version 2 without this exception.  You may, if you choose, apply this exception 
 			<cfargument name="aggregation" type="boolean" required="yes" default="false" >
 			<cfargument name="applyPermFilter" type="boolean" required="yes" default="false" >
 			<cfargument name="taggroup" type="string" required="yes" default="" >
+			<cfargument name="useCategoryIntersect" default="false">
 
-			<cfreturn variables.contentGateway.getKids(arguments.moduleID, arguments.siteid, arguments.parentID, arguments.type, arguments.today, arguments.size, arguments.keywords, arguments.hasFeatures, arguments.sortBy, arguments.sortDirection, arguments.categoryID, arguments.relatedID, arguments.tag, arguments.aggregation,arguments.applyPermFilter,arguments.taggroup)>
+			<cfreturn variables.contentGateway.getKids(arguments.moduleID, arguments.siteid, arguments.parentID, arguments.type, arguments.today, arguments.size, arguments.keywords, arguments.hasFeatures, arguments.sortBy, arguments.sortDirection, arguments.categoryID, arguments.relatedID, arguments.tag, arguments.aggregation,arguments.applyPermFilter,arguments.taggroup,arguments.useCategoryIntersect)>
 	</cffunction>
 
 	<cffunction name="getKidsIterator" output="false">
@@ -2653,8 +2654,9 @@ version 2 without this exception.  You may, if you choose, apply this exception 
 			<cfargument name="aggregation" type="boolean" required="yes" default="false" >
 			<cfargument name="applyPermFilter" type="boolean" required="yes" default="false" >
 			<cfargument name="taggroup" type="string" required="yes" default="" >
+			<cfargument name="useCategoryIntersect" default="false">
 
-			<cfreturn variables.contentGateway.getKidsIterator(arguments.moduleID, arguments.siteid, arguments.parentID, arguments.type, arguments.today, arguments.size, arguments.keywords, arguments.hasFeatures, arguments.sortBy, arguments.sortDirection, arguments.categoryID, arguments.relatedID, arguments.tag, arguments.aggregation,arguments.applyPermFilter,arguments.taggroup)>
+			<cfreturn variables.contentGateway.getKidsIterator(arguments.moduleID, arguments.siteid, arguments.parentID, arguments.type, arguments.today, arguments.size, arguments.keywords, arguments.hasFeatures, arguments.sortBy, arguments.sortDirection, arguments.categoryID, arguments.relatedID, arguments.tag, arguments.aggregation,arguments.applyPermFilter,arguments.taggroup,arguments.useCategoryIntersect)>
 	</cffunction>
 
 	<cffunction name="getIterator" output="false">

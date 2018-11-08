@@ -1,6 +1,7 @@
 <cfscript>
 if ( request.muraInDocker) {
-	// MySQL, MSSQL, + Postgres
+	// MySQL, MSSQL
+
 	if(isDefined('this.datasources.nodatabase') && len(getSystemEnvironmentSetting('MURA_DATABASE'))){
 		cfdbinfo(datasource="nodatabase",type='dbnames',name="rsdbnames");
 
@@ -10,15 +11,18 @@ if ( request.muraInDocker) {
 				databaseName = "`#databaseName#`";
 			}
 			q = new Query(datasource="nodatabase");
-			q.execute(sql='CREATE DATABASE #databaseName#');
 
-			FORM['#application.setupSubmitButton#']=true;
-			FORM['#application.setupSubmitButtonComplete#']=true;
-			FORM['setupSubmitButton']=true;
-			FORM['action']='doSetup';
+			try {
+					q.execute(sql='CREATE DATABASE #databaseName#');
+					FORM['#application.setupSubmitButton#']=true;
+					FORM['#application.setupSubmitButtonComplete#']=true;
+					FORM['setupSubmitButton']=true;
+					FORM['action']='doSetup';
+			} catch(any e) {
+					writeLog(type="Error", file="exception", text="Error trying to create DB, it may already exist");
+			}
 		}
 	}
-
 	if( request.muraSysEnv.MURA_DBTYPE == 'postgresql'){
 		qs=new Query();
 

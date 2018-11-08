@@ -61,19 +61,23 @@ if ( isDefined("arguments.ApplicationScope") ) {
 	param name="request.muraDynamicContentError" default=false;
 	param name="request.muraPreviewDomain" default="";
 	param name="request.muraOutputCacheOffset" default="";
-	session=arguments.SessionScope;
-	application=arguments.ApplicationScope;
-	try {
-		local.pluginEvent=createObject("component","mura.event").init();
-		local.pluginEvent.setValue("ApplicationScope",arguments.ApplicationScope);
-		local.pluginEvent.setValue("SessionScope",arguments.SessionScope);
-		if ( structKeyExists(arguments.SessionScope,"mura") && len(arguments.SessionScope.mura.siteid) ) {
-			local.pluginEvent.setValue("siteid",arguments.SessionScope.siteid);
-			arguments.ApplicationScope.pluginManager.announceEvent("onSiteSessionEnd",local.pluginEvent);
-		} else {
-			arguments.ApplicationScope.pluginManager.announceEvent("onGlobalSessionEnd",local.pluginEvent);
+	request.muraSessionManagement=false;
+
+	if(isDefined('arguments.SessionScope')){
+		try {
+			request.muraSessionPlaceholder=arguments.SessionScope;
+			application=arguments.ApplicationScope;
+			local.pluginEvent=createObject("component","mura.event").init();
+			local.pluginEvent.setValue("ApplicationScope",arguments.ApplicationScope);
+			local.pluginEvent.setValue("SessionScope",arguments.SessionScope);
+			if ( structKeyExists(arguments.SessionScope,"mura") && len(arguments.SessionScope.mura.siteid) ) {
+				local.pluginEvent.setValue("siteid",arguments.SessionScope.siteid);
+				arguments.ApplicationScope.pluginManager.announceEvent("onSiteSessionEnd",local.pluginEvent);
+			} else {
+				arguments.ApplicationScope.pluginManager.announceEvent("onGlobalSessionEnd",local.pluginEvent);
+			}
+		} catch (any cfcatch) {
 		}
-	} catch (any cfcatch) {
 	}
 }
 </cfscript>
